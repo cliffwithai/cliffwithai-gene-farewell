@@ -418,6 +418,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 body.gene-mode .sender-only { display: none !important; }
 body:not(.gene-mode) .gene-only { display: none !important; }
 .all-wrap { display: grid; gap: 16px; justify-items: start; }
+.all-title { margin: 6px 0 0; font-family: var(--display); font-weight: 400; font-size: 24px; color: var(--ink); background: var(--pow); border: var(--line); padding: 2px 14px; box-shadow: 4px 4px 0 var(--ink); transform: rotate(-1.5deg); }
 .all-list { display: grid; gap: 16px; width: 100%; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
 .note-card { display: grid; gap: 8px; align-content: start; background: var(--paper); border: var(--line); box-shadow: 4px 4px 0 var(--ink); padding: 0 16px 14px; min-width: 0; }
 .note-card .stickbar {
@@ -512,7 +513,7 @@ body:not(.gene-mode) .gene-only { display: none !important; }
           <p class="lede">Gene 大星要游向下一片海了。出發前，他在瓶子裡塞了一封信給還在奮戰的夥伴們。</p>
           <p class="who-q">你是哪一位夥伴？</p>
           <div class="chips" id="chips" role="group" aria-label="選擇你的名字"></div>
-          <button class="skip" type="button" data-go="for-gene">我是 Gene，看大家送我的糖蔥</button>
+          <a class="skip" href="gene/">我是 Gene，看大家送我的糖蔥</a>
         </div>
         <div class="art" aria-hidden="true">
           <svg class="burst" viewBox="-100 -100 200 200"><use href="#burstArt" x="-100" y="-100" width="200" height="200"/></svg>
@@ -547,7 +548,7 @@ body:not(.gene-mode) .gene-only { display: none !important; }
     <div class="page gift-page" id="view-gift" data-view="gift" hidden>
       <div class="intro gene-only">
         <h2>給 <span class="latin">Gene</span> 大星的糖蔥</h2>
-        <p>Gene，這些是 Gama 夥伴們一根一根包給你的糖蔥。點你身邊任何一根打開來讀，或按下面的按鈕一次讀完。一路順風，我們後會有期！</p>
+        <p>Gene，這些是 Gama 夥伴們一根一根包給你的糖蔥。點你身邊任何一根打開來讀，每一句話也都整理在下面。一路順風，我們後會有期！</p>
       </div>
 
       <div class="intro sender-only">
@@ -599,13 +600,13 @@ body:not(.gene-mode) .gene-only { display: none !important; }
       </div>
 
       <section class="all-wrap gene-only" aria-label="全部的糖蔥">
-        <button class="btn" type="button" id="open-all" aria-expanded="false" aria-controls="all-list">一次讀完全部糖蔥</button>
-        <div class="all-list" id="all-list" hidden></div>
+        <h3 class="all-title">大家包在糖蔥裡的話</h3>
+        <div class="all-list" id="all-list"></div>
       </section>
 
       <div class="pager">
         <button class="btn ghost sender-only" type="button" data-go="letter" id="back-letter">← 回去讀信</button>
-        <button class="btn ghost gene-only" type="button" data-go="start">← 回到卡片封面</button>
+        <button class="btn ghost gene-only" type="button" data-go="start" id="to-cover">← 回到卡片封面</button>
         <span class="pageno sender-only">3 / 3</span>
       </div>
     </div>
@@ -735,10 +736,14 @@ body:not(.gene-mode) .gene-only { display: none !important; }
   }
 
   /* ---------- pages ---------- */
+  // "card" = the three-page card for everyone; "gene" = Gene's own standalone page (always shows his 糖蔥).
+  const PAGE_MODE = "card";
   const VIEWS = ["start", "letter", "gift", "for-gene"];
+  if (PAGE_MODE === "gene") $("to-cover").hidden = true;
   function elOf(v) { return v === "for-gene" ? "gift" : v; }
   let view = null;
   function go(v, fromHash) {
+    if (PAGE_MODE === "gene") v = "for-gene";
     if (!VIEWS.includes(v)) v = "start";
     if (v === "letter" && !picked) v = "start";
     if (v === view) return;
@@ -751,7 +756,7 @@ body:not(.gene-mode) .gene-only { display: none !important; }
       if (d.dataset.go === "letter") d.disabled = !picked;
     });
     $("back-letter").hidden = !picked;
-    if (!fromHash && location.hash.slice(1) !== v) {
+    if (!fromHash && PAGE_MODE !== "gene" && location.hash.slice(1) !== v) {
       try { history.pushState(null, "", "#" + v); } catch (e) { location.hash = v; }
     }
     if (elOf(v) === "gift") requestAnimationFrame(render);
@@ -920,13 +925,6 @@ body:not(.gene-mode) .gene-only { display: none !important; }
       card.append(bar, h, fl, p, t); box.appendChild(card);
     });
   }
-  $("open-all").addEventListener("click", () => {
-    const box = $("all-list"), open = box.hidden;
-    box.hidden = !open;
-    $("open-all").setAttribute("aria-expanded", String(open));
-    $("open-all").textContent = open ? "收起來" : "一次讀完全部糖蔥";
-    if (open) setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  });
 
   function render() {
     $("reef-count").textContent = view === "for-gene"
