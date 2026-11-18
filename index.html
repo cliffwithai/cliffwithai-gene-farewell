@@ -799,7 +799,9 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   const stage = $("stage");
   const geneEl = $("gene");
   let items = [];
-  let uid = null, isOwner = false, db = null, loaded = false, offsite = false;
+  // Set to the Google Apps Script web-app URL to store 糖蔥 in a Google Sheet (used when the page runs outside claude.ai).
+  const SHEET_API = "";
+  let uid = null, isOwner = false, db = null, api = null, loaded = false, offsite = false;
 
   function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 
@@ -932,9 +934,9 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("overlay").hidden) closeSheet(); });
   $("sheet-edit").addEventListener("click", () => { closeSheet(); $("compose").scrollIntoView({ behavior: "smooth", block: "center" }); text.focus({ preventScroll: true }); });
   $("sheet-del").addEventListener("click", async () => {
-    if (!sheetItem || !db) return;
+    if (!sheetItem || !api) return;
     if (!delArmed) { delArmed = true; $("sheet-del").textContent = "確定刪除？"; return; }
-    try { await db.doc("wishes/" + sheetItem.id).delete(); closeSheet(); }
+    try { await api.remove(sheetItem.id); closeSheet(); }
     catch (e) { $("sheet-del").textContent = "刪不掉，稍後再試"; }
   });
 
@@ -959,15 +961,15 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     const body = text.value.trim();
     if (!name) { msg("先署個名，Gene 才知道是誰送的糖蔥。", true); $("from").focus(); return; }
     if (!body) { msg("糖蔥裡還沒包話喔。", true); text.focus(); return; }
-    if (!db || !uid) { msg("目前連不上海底郵局，請用已登入的 claude.ai 帳號開啟這個頁面。", true); return; }
+    if (!api || !uid) { msg("目前連不上海底郵局，請稍後再試。", true); return; }
     busy = true; $("send").disabled = true; msg("糖蔥打包中⋯");
     const now = Date.now();
     const doc = { name: name.slice(0, 24), text: body.slice(0, 400), flavor, createdAt: (mine && mine.createdAt) || now, updatedAt: now };
-    if (flavor === "weird") doc.weird = mine && mine.flavor === "weird" && WEIRD[mine.weird] ? mine.weird : rollWeird();
+    if (flavor === "weird" && mine && mine.flavor === "weird" && WEIRD[mine.weird]) doc.weird = mine.weird;
     const wasMine = !!mine;
     try {
-      await db.doc("wishes/" + uid).set(doc);
-      const wf = doc.weird ? WEIRD[doc.weird] : null;
+      const res = await api.save(doc);
+      const wf = res && res.weird ? WEIRD[res.weird] : null;
       msg((wasMine ? "糖蔥更新好了！" : "糖蔥送到了，Gene 大星會收到的！") + (wf ? "　怪味揭曉：" + wf.name + "！" + wf.say + "。" : ""));
       setTimeout(() => stage.scrollIntoView({ behavior: "smooth", block: "center" }), 350);
       store.set("gene-draft", "");
@@ -981,10 +983,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   });
   let rmArmed = false;
   $("remove").addEventListener("click", async () => {
-    if (!db || !uid) return;
+    if (!api || !uid) return;
     if (!rmArmed) { rmArmed = true; $("remove").textContent = "確定收回？"; return; }
     rmArmed = false; $("remove").textContent = "收回我的糖蔥";
-    try { await db.doc("wishes/" + uid).delete(); text.value = ""; $("count").textContent = "0"; msg("糖蔥收回了。"); }
+    try { await api.remove(uid); mine = null; syncForm(); text.value = ""; $("count").textContent = "0"; msg("糖蔥收回了。"); }
     catch (e) { msg("收不回來，請再試一次。", true); }
   });
 
@@ -1009,9 +1011,66 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     };
   }
 
+  function applyItems(list) {
+    items = list.filter((x) => x.text).sort((a, b) => a.createdAt - b.createdAt || (a.id < b.id ? -1 : 1));
+    const prevMine = mine;
+    mine = items.find((x) => x.id === uid) || null;
+    if (mine && !prevMine) {
+      $("from").value = mine.name; text.value = mine.text; $("count").textContent = mine.text.length; flavor = mine.flavor; paintFlavors();
+    }
+    syncForm();
+    render();
+  }
+  function cleanRow(x) {
+    return {
+      id: String(x.id || ""),
+      name: typeof x.name === "string" ? x.name.slice(0, 24) : "",
+      text: typeof x.text === "string" ? x.text.slice(0, 400) : "",
+      flavor: typeof x.flavor === "string" && FLAVORS[x.flavor] ? x.flavor : "plain",
+      weird: typeof x.weird === "string" && WEIRD[x.weird] ? x.weird : null,
+      createdAt: Number(x.createdAt) || 0,
+      updatedAt: Number(x.updatedAt) || 0
+    };
+  }
+
+  /* Google Sheet backend (GitHub Pages version): anyone can send, no account needed */
+  function startSheet() {
+    const rand = (n) => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map((x) => x.toString(36).padStart(2, "0")).join("").slice(0, n * 2); };
+    uid = store.get("gene-candy-id");
+    let secret = store.get("gene-candy-secret");
+    if (!uid || !secret) { uid = "c" + rand(10); secret = rand(20); store.set("gene-candy-id", uid); store.set("gene-candy-secret", secret); }
+    const post = async (body) => {
+      const r = await fetch(SHEET_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
+      const j = await r.json();
+      if (!j.ok) throw { code: j.error || "server" };
+      return j;
+    };
+    let fetching = false;
+    async function refresh() {
+      if (fetching) return;
+      fetching = true;
+      try {
+        const r = await fetch(SHEET_API + (SHEET_API.includes("?") ? "&" : "?") + "t=" + Date.now());
+        const j = await r.json();
+        loaded = true;
+        applyItems((j.items || []).map(cleanRow));
+      } catch (e) {
+        if (!loaded) { const st = $("reef-status"); st.hidden = false; st.textContent = "糖蔥還在路上，海底郵局暫時連不上⋯"; }
+      } finally { fetching = false; }
+    }
+    api = {
+      async save(doc) { const j = await post(Object.assign({ action: "upsert", id: uid, secret }, doc)); await refresh(); return { weird: j.weird || null }; },
+      async remove(id) { await post({ action: "delete", id, secret }); await refresh(); }
+    };
+    refresh();
+    setInterval(() => { if (document.visibilityState === "visible" && view === "gift") refresh(); }, 20000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
+  }
+
   (async () => {
     if (!(window.claude && window.claude.use)) {
-      loaded = true; $("reef-status").textContent = "大家的糖蔥在海底郵局本站，點上面的按鈕過去看。";
+      if (SHEET_API) { startSheet(); return; }
+      loaded = true;
       offsite = true; $("compose").hidden = true; $("elsewhere").hidden = false; render(); return;
     }
     const [dbNs, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
@@ -1023,21 +1082,21 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       if ((await user.can("data.write")) === false) writable = false;
     }
     if (!db) { loaded = true; $("reef-status").textContent = "登入 claude.ai 後就能看到大家的糖蔥。"; disableForm("登入 claude.ai 後才能留言。"); return; }
+    api = {
+      async save(doc) {
+        if (doc.flavor === "weird" && !doc.weird) doc.weird = rollWeird();
+        await db.doc("wishes/" + uid).set(doc);
+        return { weird: doc.weird || null };
+      },
+      async remove(id) { await db.doc("wishes/" + id).delete(); }
+    };
     if (!uid) disableForm("登入 claude.ai 後才能留言。");
     else if (!writable) disableForm("你目前的權限只能看糖蔥，不能留言。請分享者把你設為可參與（Contributor）。");
 
     const timer = setTimeout(() => { if (!loaded) $("reef-status").textContent = "糖蔥還在路上，海底郵局暫時連不上⋯"; }, 10000);
     db.collection("wishes").onSnapshot((snap) => {
       if (!snap.metadata.fromCache) { clearTimeout(timer); loaded = true; }
-      items = snap.docs.filter((d) => d.exists).map(clean).filter((x) => x.text)
-        .sort((a, b) => a.createdAt - b.createdAt || (a.id < b.id ? -1 : 1));
-      const prevMine = mine;
-      mine = items.find((x) => x.id === uid) || null;
-      if (mine && !prevMine) {
-        $("from").value = mine.name; text.value = mine.text; $("count").textContent = mine.text.length; flavor = mine.flavor; paintFlavors();
-      }
-      syncForm();
-      render();
+      applyItems(snap.docs.filter((d) => d.exists).map(clean));
     }, () => {
       clearTimeout(timer); loaded = true;
       const st = $("reef-status"); st.hidden = false; st.textContent = "暫時看不到糖蔥，請重新整理頁面。";
