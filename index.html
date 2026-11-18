@@ -818,7 +818,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   // Set to the Google Apps Script web-app URL to store 糖蔥 in a Google Sheet (used when the page runs outside claude.ai).
   const SHEET_API = "";
   // Firebase web-app config (Project settings → Your apps → Web). Public by design; access is enforced by Firestore rules.
-  const FIREBASE_CONFIG = null;
+  const FIREBASE_CONFIG = {"apiKey": "AIzaSyCOeD0JsufrL36ho5xM2NKxxvaE5iwM0kA", "authDomain": "gene-farewell-f1e0fe.firebaseapp.com", "projectId": "gene-farewell-f1e0fe", "storageBucket": "gene-farewell-f1e0fe.firebasestorage.app", "messagingSenderId": "285683565743", "appId": "1:285683565743:web:9af1fb543b5eb13e27c05a"};
   // Frozen copy of every 糖蔥, baked in from the Google Sheet so Gene can read them forever without any backend.
   const SNAPSHOT = [];
   // true = archive edition: show SNAPSHOT only, no sending.
