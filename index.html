@@ -214,6 +214,21 @@ section { padding-block: 28px; }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 .candy .who { font-family: var(--display); font-size: 16px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .candy .snip { font-size: 12px; line-height: 1.4; color: #3d3d3d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.candy.weird { background: #fff; overflow: visible; }
+.candy .swirl {
+  position: absolute; inset: 0; border-radius: 9px; z-index: 0; overflow: hidden;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='34'%3E%3Ctext x='3' y='24' font-family='Arial Black,Arial' font-weight='900' font-size='24' fill='%23141414' fill-opacity='.38' transform='rotate(-14 12 16)'%3E%3F%3C/text%3E%3Ctext x='22' y='31' font-family='Arial Black,Arial' font-weight='900' font-size='15' fill='%23ffffff' fill-opacity='.85' transform='rotate(18 28 24)'%3E%3F%3C/text%3E%3C/svg%3E") 0 0 / 38px 34px, radial-gradient(circle at 80% 30%, #ff3b3b 0 18%, transparent 19%), conic-gradient(from 20deg at 30% 60%, #ff4f9a, #ffd629, #2ee6c2, #8a5cff, #ff8a1e, #7bd23f, #ff3b3b, #ff4f9a);
+  animation: trippy 5s linear infinite;
+}
+@keyframes trippy { to { filter: hue-rotate(360deg); } }
+.candy.weird .inner { position: relative; z-index: 1; background: rgba(255,255,255,.82); border: 2px solid var(--ink); border-radius: 6px; padding: 0 6px; transform-origin: 50% 50%; }
+.candy .badge {
+  position: absolute; z-index: 2; top: -15px; right: 6px; font-family: var(--display); font-size: 12px; line-height: 1.5; white-space: nowrap;
+  color: var(--ink); background: var(--bf, #fff); border: 2.5px solid var(--ink); padding: 0 8px; transform: rotate(7deg);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.candy.weird:hover .inner { animation: jitter .25s steps(2) infinite; }
+@keyframes jitter { 0% { transform: rotate(-2deg); } 50% { transform: rotate(2deg) translateX(1px); } 100% { transform: rotate(-1deg); } }
 .candy.mine { box-shadow: 4px 4px 0 var(--star-2); border-color: var(--star-2); }
 .candy:hover { z-index: 4; box-shadow: 6px 6px 0 var(--ink); }
 
@@ -246,6 +261,18 @@ section { padding-block: 28px; }
   width: 34px; height: 14px; border: 2px solid var(--ink); border-radius: 5px; display: block;
   background: repeating-linear-gradient(180deg, rgba(0,0,0,.12) 0 1.5px, transparent 1.5px 4px), var(--flav);
 }
+.flavor.weird i {
+  position: relative; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='34'%3E%3Ctext x='3' y='24' font-family='Arial Black,Arial' font-weight='900' font-size='24' fill='%23141414' fill-opacity='.38' transform='rotate(-14 12 16)'%3E%3F%3C/text%3E%3Ctext x='22' y='31' font-family='Arial Black,Arial' font-weight='900' font-size='15' fill='%23ffffff' fill-opacity='.85' transform='rotate(18 28 24)'%3E%3F%3C/text%3E%3C/svg%3E") 0 0 / 19px 17px, conic-gradient(from 20deg at 30% 60%, #ff4f9a, #ffd629, #2ee6c2, #8a5cff, #ff8a1e, #7bd23f, #ff3b3b, #ff4f9a); animation: trippy 4s linear infinite;
+}
+.flavor.weird i { width: 40px; height: 22px; }
+.flavor.weird i::after {
+  content: "?"; position: absolute; inset: -6px 0 0; display: grid; place-items: center;
+  font-family: var(--display-latin); font-size: 24px; line-height: 1; color: #fff;
+  -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; transform: rotate(-12deg);
+}
+.flavor.weird span { font-family: var(--display); letter-spacing: .02em; }
+.flavor.weird:hover { animation: jitter .3s steps(2) infinite; }
+.weird-hint { font-size: 13px; color: var(--text-soft); margin: 2px 0 0; }
 .flavor[aria-checked="true"] { background: var(--pow); transform: translateY(-1px); box-shadow: 3px 3px 0 var(--ink); }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .btn {
@@ -272,6 +299,8 @@ section { padding-block: 28px; }
   background: var(--paper); border: var(--line); box-shadow: var(--pop);
   padding: 24px clamp(18px, 4vw, 30px); display: grid; gap: 12px;
 }
+.sheet .stick.weird { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='34'%3E%3Ctext x='3' y='24' font-family='Arial Black,Arial' font-weight='900' font-size='24' fill='%23141414' fill-opacity='.38' transform='rotate(-14 12 16)'%3E%3F%3C/text%3E%3Ctext x='22' y='31' font-family='Arial Black,Arial' font-weight='900' font-size='15' fill='%23ffffff' fill-opacity='.85' transform='rotate(18 28 24)'%3E%3F%3C/text%3E%3C/svg%3E") 0 0 / 38px 34px, conic-gradient(from 20deg at 30% 60%, #ff4f9a, #ffd629, #2ee6c2, #8a5cff, #ff8a1e, #7bd23f, #ff3b3b, #ff4f9a); animation: trippy 5s linear infinite; }
+.sheet .reveal { justify-self: start; font-family: var(--display); font-size: 16px; color: var(--ink); background: var(--bf, #fff); border: 2.5px solid var(--ink); padding: 2px 12px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(-1.5deg); }
 .sheet .stick {
   height: 22px; border: 3px solid var(--ink); border-radius: 8px;
   background: repeating-linear-gradient(180deg, rgba(0,0,0,.1) 0 2px, transparent 2px 6px), var(--flav, #fffdf5);
@@ -297,7 +326,7 @@ section { padding-block: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ambient { display: none; }
-  .gene .burst, .gene .star, .candy .inner { animation: none !important; }
+  .gene .burst, .gene .star, .candy .inner, .candy .swirl, .flavor.weird i, .flavor.weird, .sheet .stick.weird { animation: none !important; }
   .candy, .stage { transition: none; }
 }
 
@@ -535,6 +564,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         <div class="row">
           <span class="lbl" id="flavor-label">糖蔥口味</span>
           <div class="flavors" id="flavors" role="radiogroup" aria-labelledby="flavor-label"></div>
+          <p class="weird-hint" id="weird-hint" hidden>怪味要送出後才揭曉：可能是香菜、芥末，或某一種辣椒。Gene 大星自求多福。</p>
         </div>
         <div class="actions">
           <button class="btn" type="submit" id="send">送出糖蔥</button>
@@ -568,7 +598,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 
 <div class="overlay" id="overlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-who" id="sheet">
-    <div class="stick" aria-hidden="true"></div>
+    <div class="stick" id="sheet-stick" aria-hidden="true"></div>
+    <div class="reveal" id="sheet-reveal" hidden></div>
     <h3 id="sheet-who"></h3>
     <p class="body" id="sheet-body"></p>
     <div class="when" id="sheet-when"></div>
@@ -724,14 +755,28 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     peanut: { name: "花生", c: "#f3d9a4" },
     berry: { name: "草莓", c: "#ffc4d4" },
     matcha: { name: "抹茶", c: "#d3eaa9" },
-    brown: { name: "黑糖", c: "#dcb48a" }
+    brown: { name: "黑糖", c: "#dcb48a" },
+    weird: { name: "怪味 ???", c: "#ffffff" }
   };
+  const WEIRD = {
+    cilantro: { name: "香菜", c: "#7bd23f", say: "愛的人很愛，恨的人很恨" },
+    wasabi: { name: "芥末", c: "#b6e35a", say: "直衝腦門，眼淚自己流" },
+    chaotian: { name: "朝天椒", c: "#ff4b3a", say: "台灣人的日常辣度" },
+    jalapeno: { name: "墨西哥青辣椒", c: "#5fbf4a", say: "微辣入門款，騙你的" },
+    habanero: { name: "哈瓦那辣椒", c: "#ff9a1e", say: "先是水果香，然後爆炸" },
+    ghost: { name: "魔鬼椒", c: "#e0243a", say: "一口見真章" },
+    reaper: { name: "卡羅萊納死神辣椒", c: "#b0122a", say: "請先準備好牛奶" },
+    mala: { name: "花椒麻辣", c: "#ff6a2b", say: "嘴巴會開始自己震動" }
+  };
+  const WEIRD_KEYS = Object.keys(WEIRD);
+  const rollWeird = () => WEIRD_KEYS[Math.floor(Math.random() * WEIRD_KEYS.length)];
+  const flavorLabel = (it) => it.flavor === "weird" && WEIRD[it.weird] ? "怪味（" + WEIRD[it.weird].name + "）" : (FLAVORS[it.flavor] || FLAVORS.plain).name;
   let flavor = "plain";
   const fl = $("flavors");
   Object.keys(FLAVORS).forEach((k) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "flavor";
+    b.className = "flavor" + (k === "weird" ? " weird" : "");
     b.setAttribute("role", "radio");
     b.dataset.key = k;
     b.style.setProperty("--flav", FLAVORS[k].c);
@@ -741,7 +786,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     b.addEventListener("click", () => { flavor = k; paintFlavors(); });
     fl.appendChild(b);
   });
-  function paintFlavors() { [...fl.children].forEach((b) => b.setAttribute("aria-checked", String(b.dataset.key === flavor))); }
+  function paintFlavors() {
+    [...fl.children].forEach((b) => b.setAttribute("aria-checked", String(b.dataset.key === flavor)));
+    $("weird-hint").hidden = flavor !== "weird";
+  }
   paintFlavors();
 
   const text = $("text");
@@ -817,7 +865,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       const hv = hash(it.id);
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "candy" + (it.id === uid ? " mine" : "");
+      const isWeird = it.flavor === "weird";
+      b.className = "candy" + (it.id === uid ? " mine" : "") + (isWeird ? " weird" : "");
       b.style.setProperty("--w", L.w + "px");
       b.style.setProperty("--h", L.h + "px");
       b.style.setProperty("--flav", (FLAVORS[it.flavor] || FLAVORS.plain).c);
@@ -829,8 +878,16 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       const inner = document.createElement("span"); inner.className = "inner";
       const who = document.createElement("span"); who.className = "who"; who.textContent = it.name || "神秘海洋生物";
       const snip = document.createElement("span"); snip.className = "snip"; snip.textContent = it.text;
-      inner.append(who, snip); b.appendChild(inner);
-      b.setAttribute("aria-label", (it.name || "神秘海洋生物") + " 送的糖蔥：" + it.text);
+      inner.append(who, snip);
+      if (isWeird) {
+        const sw = document.createElement("span"); sw.className = "swirl"; sw.style.animationDelay = (-(hv % 5)) + "s";
+        const bd = document.createElement("span"); bd.className = "badge";
+        const wf = WEIRD[it.weird];
+        bd.textContent = wf ? wf.name + "！" : "???";
+        if (wf) bd.style.setProperty("--bf", wf.c);
+        b.append(sw, inner, bd);
+      } else b.appendChild(inner);
+      b.setAttribute("aria-label", (it.name || "神秘海洋生物") + " 送的" + flavorLabel(it) + "糖蔥：" + it.text);
       b.addEventListener("click", () => openSheet(it));
       stage.appendChild(b);
     });
@@ -855,7 +912,12 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   function openSheet(it) {
     sheetItem = it; delArmed = false;
     $("sheet").style.setProperty("--flav", (FLAVORS[it.flavor] || FLAVORS.plain).c);
-    $("sheet-who").textContent = (it.name || "神秘海洋生物") + " 送來的" + (FLAVORS[it.flavor] || FLAVORS.plain).name + "糖蔥";
+    const wf = it.flavor === "weird" ? WEIRD[it.weird] : null;
+    $("sheet-stick").classList.toggle("weird", it.flavor === "weird");
+    $("sheet-who").textContent = (it.name || "神秘海洋生物") + " 送來的" + (it.flavor === "weird" ? "怪味" : (FLAVORS[it.flavor] || FLAVORS.plain).name) + "糖蔥";
+    const rv = $("sheet-reveal");
+    rv.hidden = !wf;
+    if (wf) { rv.textContent = "抽中：" + wf.name + "口味。" + wf.say; rv.style.setProperty("--bf", wf.c); }
     $("sheet-body").textContent = it.text;
     $("sheet-when").textContent = fmt(it.updatedAt || it.createdAt);
     $("sheet-edit").hidden = it.id !== uid;
@@ -900,9 +962,13 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     if (!db || !uid) { msg("目前連不上海底郵局，請用已登入的 claude.ai 帳號開啟這個頁面。", true); return; }
     busy = true; $("send").disabled = true; msg("糖蔥打包中⋯");
     const now = Date.now();
+    const doc = { name: name.slice(0, 24), text: body.slice(0, 400), flavor, createdAt: (mine && mine.createdAt) || now, updatedAt: now };
+    if (flavor === "weird") doc.weird = mine && mine.flavor === "weird" && WEIRD[mine.weird] ? mine.weird : rollWeird();
+    const wasMine = !!mine;
     try {
-      await db.doc("wishes/" + uid).set({ name: name.slice(0, 24), text: body.slice(0, 400), flavor, createdAt: (mine && mine.createdAt) || now, updatedAt: now });
-      msg(mine ? "糖蔥更新好了！" : "糖蔥送到了，Gene 大星會收到的！");
+      await db.doc("wishes/" + uid).set(doc);
+      const wf = doc.weird ? WEIRD[doc.weird] : null;
+      msg((wasMine ? "糖蔥更新好了！" : "糖蔥送到了，Gene 大星會收到的！") + (wf ? "　怪味揭曉：" + wf.name + "！" + wf.say + "。" : ""));
       setTimeout(() => stage.scrollIntoView({ behavior: "smooth", block: "center" }), 350);
       store.set("gene-draft", "");
     } catch (err) {
@@ -937,6 +1003,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       name: typeof x.name === "string" ? x.name.slice(0, 24) : "",
       text: typeof x.text === "string" ? x.text.slice(0, 400) : "",
       flavor: typeof x.flavor === "string" && FLAVORS[x.flavor] ? x.flavor : "plain",
+      weird: typeof x.weird === "string" && WEIRD[x.weird] ? x.weird : null,
       createdAt: typeof x.createdAt === "number" ? x.createdAt : 0,
       updatedAt: typeof x.updatedAt === "number" ? x.updatedAt : 0
     };
