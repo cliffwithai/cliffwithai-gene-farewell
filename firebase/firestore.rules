@@ -15,8 +15,8 @@ service cloud.firestore {
           && d.name is string && d.name.size() > 0 && d.name.size() <= 24
           && d.text is string && d.text.size() > 0 && d.text.size() <= 400
           && d.flavor in ['plain', 'peanut', 'berry', 'matcha', 'brown', 'weird']
-          && (d.flavor != 'weird'
-              || d.get('weird', '') in ['cilantro', 'wasabi', 'chaotian', 'jalapeno', 'habanero', 'ghost', 'reaper', 'mala'])
+          // 怪味的名稱由網頁從 58 種裡抽，這裡只檢查格式
+          && (d.flavor != 'weird' || d.get('weird', '').matches('^[a-z0-9_]{2,24}$'))
           // 怪味抽到之後不能重抽
           && (before.get('weird', null) == null || d.get('weird', null) == before.get('weird', null))
           // hidden 只有你在 Firebase 後台能改

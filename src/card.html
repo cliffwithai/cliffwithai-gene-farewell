@@ -264,6 +264,25 @@ section { padding-block: 28px; }
 .flavor.weird span { font-family: var(--display); letter-spacing: .02em; }
 .flavor.weird:hover { animation: jitter .3s steps(2) infinite; }
 .weird-hint { font-size: 13px; color: var(--text-soft); margin: 2px 0 0; }
+.fstick-wrap { display: grid; gap: 6px; justify-items: start; width: 100%; }
+.fstick {
+  position: relative; width: min(100%, 300px); height: 48px; border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--ink); display: grid; place-items: center; margin: 0 8px;
+}
+.fstick::before, .fstick::after {
+  content: ""; position: absolute; top: 50%; width: 10px; height: 72%; transform: translateY(-50%);
+  border: 2.5px solid var(--ink); border-radius: 50%; background: rgba(255,255,255,.6);
+}
+.fstick::before { left: -7px; }
+.fstick::after { right: -7px; }
+.fstick span {
+  font-family: var(--display); font-size: 17px; line-height: 1.4; color: var(--ink); white-space: nowrap; max-width: calc(100% - 24px);
+  overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,.9); border: 2px solid var(--ink); padding: 0 10px; transform: rotate(-2deg);
+}
+.fsay { margin: 0 0 0 8px; font-size: 14px; color: var(--text); }
+.fsay::before { content: "「"; } .fsay::after { content: "」"; }
+.reveal-box { display: grid; gap: 6px; padding-top: 4px; }
+.reveal-box .lead { margin: 0; font-family: var(--display); font-size: 17px; color: var(--ink); }
 .flavor[aria-checked="true"] { background: var(--pow); transform: translateY(-1px); box-shadow: 3px 3px 0 var(--ink); }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .btn {
@@ -570,13 +589,14 @@ body:not(.gene-mode) .gene-only { display: none !important; }
         <div class="row">
           <span class="lbl" id="flavor-label">糖蔥口味</span>
           <div class="flavors" id="flavors" role="radiogroup" aria-labelledby="flavor-label"></div>
-          <p class="weird-hint" id="weird-hint" hidden>怪味要送出後才揭曉：可能是香菜、芥末，或某一種辣椒。Gene 大星自求多福。</p>
+          <p class="weird-hint" id="weird-hint" hidden>怪味要送出後才揭曉：58 種口味隨機抽一種，從香菜、臭豆腐、榴槤到爛諧音笑話都有可能。Gene 大星自求多福。</p>
         </div>
         <div class="actions">
           <button class="btn" type="submit" id="send">送出糖蔥</button>
           <button class="btn ghost" type="button" id="remove" hidden>收回我的糖蔥</button>
         </div>
         <div class="msg" id="msg" role="status"></div>
+        <div class="reveal-box" id="reveal-box" hidden></div>
       </form>
 
       <p class="sub" id="reef-count">大家的糖蔥都會堆在 Gene 大星身邊</p>
@@ -611,7 +631,7 @@ body:not(.gene-mode) .gene-only { display: none !important; }
 <div class="overlay" id="overlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-who" id="sheet">
     <div class="stick" id="sheet-stick" aria-hidden="true"></div>
-    <div class="reveal" id="sheet-reveal" hidden></div>
+    <div class="reveal-box" id="sheet-reveal" hidden></div>
     <h3 id="sheet-who"></h3>
     <p class="body" id="sheet-body"></p>
     <div class="when" id="sheet-when"></div>
@@ -797,16 +817,93 @@ body:not(.gene-mode) .gene-only { display: none !important; }
     brown: { name: "黑糖", c: "#dcb48a" },
     weird: { name: "怪味 ???", c: "#ffffff" }
   };
-  const WEIRD = {
-    cilantro: { name: "香菜", c: "#7bd23f", say: "愛的人很愛，恨的人很恨" },
-    wasabi: { name: "芥末", c: "#b6e35a", say: "直衝腦門，眼淚自己流" },
-    chaotian: { name: "朝天椒", c: "#ff4b3a", say: "台灣人的日常辣度" },
-    jalapeno: { name: "墨西哥青辣椒", c: "#5fbf4a", say: "微辣入門款，騙你的" },
-    habanero: { name: "哈瓦那辣椒", c: "#ff9a1e", say: "先是水果香，然後爆炸" },
-    ghost: { name: "魔鬼椒", c: "#e0243a", say: "一口見真章" },
-    reaper: { name: "卡羅萊納死神辣椒", c: "#b0122a", say: "請先準備好牛奶" },
-    mala: { name: "花椒麻辣", c: "#ff6a2b", say: "嘴巴會開始自己震動" }
-  };
+  // [key, name, tagline, main color, second color, pattern] — 8 original + 50 new weird flavors
+  const WEIRD_LIST = [
+    ["cilantro", "香菜", "愛的人很愛，恨的人很恨", "#7bd23f", "#e9ffd0", "speckle"],
+    ["wasabi", "芥末", "直衝腦門，眼淚自己流", "#b6e35a", "#f4ffd8", "swirl"],
+    ["chaotian", "朝天椒", "台灣人的日常辣度", "#ff4b3a", "#ffd6cc", "dots"],
+    ["jalapeno", "墨西哥青辣椒", "微辣入門款，騙你的", "#5fbf4a", "#fff3b0", "stripe"],
+    ["habanero", "哈瓦那辣椒", "先是水果香，然後爆炸", "#ff9a1e", "#ffe0a8", "zigzag"],
+    ["ghost", "魔鬼椒", "一口見真章", "#e0243a", "#3a0a12", "check"],
+    ["reaper", "卡羅萊納死神辣椒", "請先準備好牛奶", "#b0122a", "#1a1a1a", "zigzag"],
+    ["mala", "花椒麻辣", "嘴巴會開始自己震動", "#ff6a2b", "#7a2a10", "speckle"],
+    ["stinky_tofu", "臭豆腐", "聞起來像離別，吃起來像想念", "#c9a46a", "#6b5a2e", "speckle"],
+    ["durian", "榴槤", "整層樓都知道你來了", "#f2d94e", "#8bb040", "zigzag"],
+    ["century_egg", "皮蛋", "黑得發亮，Q 得很有個性", "#3b3528", "#c9a96a", "swirl"],
+    ["bitter_melon", "苦瓜", "先苦後甘，像每次上版前", "#8fd16a", "#e8ffd6", "zigzag"],
+    ["rice_blood", "豬血糕", "裹滿花生粉的夜市靈魂", "#5a2a2a", "#e8c48a", "speckle"],
+    ["natto", "納豆", "牽絲牽到下一份工作", "#c7a24a", "#fff1c8", "swirl"],
+    ["kimchi", "泡菜", "發酵剛好的同事情誼", "#e8462e", "#fff0d8", "stripe"],
+    ["blue_cheese", "藍紋起司", "看起來壞掉了，其實很高級", "#f3efe0", "#5f84b8", "speckle"],
+    ["fish_sauce", "魚露", "海風直接吹進鼻腔", "#c98a2a", "#fff2d0", "stripe"],
+    ["shrimp_paste", "蝦醬", "整片海洋濃縮成一口", "#d9707a", "#ffe4e8", "dots"],
+    ["squid_ink", "墨魚汁", "吃完記得照鏡子", "#1f1f2a", "#6d6d8a", "swirl"],
+    ["sea_urchin", "海膽", "海底郵局的高級品", "#ffb43c", "#ffe9b8", "dots"],
+    ["oyster", "生蠔", "大海的鹹味直送", "#b8c4c8", "#f2f6f7", "swirl"],
+    ["small_hands", "小手社手作", "每一根都是手捏的", "#ffcf8a", "#8a5a2a", "check"],
+    ["raw_garlic", "生蒜頭", "吃完請保持社交距離", "#f6f1e2", "#c9b98a", "check"],
+    ["raw_onion", "生洋蔥", "還沒咬就先哭了", "#c58bd6", "#f6e8fb", "stripe"],
+    ["old_ginger", "老薑", "暖到冒汗", "#e3b24a", "#fff0c2", "speckle"],
+    ["black_vinegar", "烏醋", "灑一點就很台", "#3a2418", "#9a6a4a", "stripe"],
+    ["tofu_ru", "豆腐乳", "鹹到靈魂出竅", "#e86a4a", "#ffd8c8", "dots"],
+    ["pickled_mustard", "酸菜", "吃完會想去夜市", "#b8c24a", "#f2f5c8", "zigzag"],
+    ["plum_powder", "梅子粉", "酸到眼睛瞇起來", "#c2185b", "#ffc4dc", "speckle"],
+    ["lemon_peel", "檸檬皮", "酸苦交織的青春", "#ffe14a", "#fffbd0", "stripe"],
+    ["grapefruit", "葡萄柚", "苦中帶甜，像離職前一週", "#ff7f6a", "#ffe2d8", "swirl"],
+    ["olive", "鹹橄欖", "鹹甜鹹甜的大人味", "#6b7a2a", "#d8e0a0", "dots"],
+    ["black_pepper", "黑胡椒", "嗆到打噴嚏", "#2a2a2a", "#d8d8d8", "speckle"],
+    ["cumin", "孜然", "夜市烤肉攤的靈魂", "#a8742a", "#f2d8a0", "speckle"],
+    ["star_anise", "八角", "滷味攤飄來的香氣", "#6a3a1a", "#d89a5a", "check"],
+    ["curry", "咖哩", "顏色很亮，個性很強", "#f2b81a", "#fff0b0", "swirl"],
+    ["tom_yum", "冬蔭功", "酸辣到額頭冒汗", "#ff8a3c", "#ffe14a", "zigzag"],
+    ["smoked", "煙燻", "像剛從營火旁走回來", "#6a5a4a", "#c8b8a8", "swirl"],
+    ["mayo", "美乃滋", "台式沙拉的靈魂", "#fff6d0", "#f2d870", "dots"],
+    ["game_meme", "遊戲業爛梗", "前輩才吃得懂", "#8a5cff", "#2ee6c2", "check"],
+    ["salty_licorice", "鹹甘草糖", "北歐人說這是糖果", "#1a1a1a", "#5a5a5a", "check"],
+    ["mint_choco", "薄荷巧克力", "牙膏派與甜點派正式開戰", "#7fe0c8", "#5a3a2a", "speckle"],
+    ["toothpaste_oj", "牙膏配柳橙汁", "刷完牙喝果汁的那一刻", "#9ee8f0", "#ffb43c", "stripe"],
+    ["pineapple_pizza", "鳳梨披薩", "爭議不斷，跟爛諧音笑話一樣", "#ffd84a", "#e8462e", "dots"],
+    ["boba", "珍珠奶茶", "嚼到最後一顆珍珠的成就感", "#d8b48a", "#3a2418", "dots"],
+    ["energy_drink", "提神飲料", "加班專用，心跳加速", "#c8ff3a", "#1a3a8a", "zigzag"],
+    ["coffee_grounds", "第三杯咖啡渣", "苦到開始思考人生", "#4a2e1a", "#a8805a", "speckle"],
+    ["meeting_room", "會議室冷氣", "18 度，沒人敢調", "#b8e0ff", "#ffffff", "zigzag"],
+    ["monday", "星期一早晨", "苦澀中帶一點咖啡因", "#8a8aa8", "#e0e0f0", "stripe"],
+    ["deadline", "死線", "越接近越辣", "#ff2a4a", "#ffd84a", "zigzag"],
+    ["printer_toner", "印表機碳粉", "卡紙的味道", "#3a3a3a", "#9a9a9a", "check"],
+    ["bad_pun", "爛諧音笑話", "冷到牙齒發酸", "#a8d8ff", "#ffffff", "speckle"],
+    ["typhoon_dinner", "颱風天的飯局", "等了好久終於吃到", "#7aa8c8", "#e0f0ff", "swirl"],
+    ["tennis_racket", "5000 元網球拍", "高級到捨不得咬", "#f2f2f2", "#e8322a", "stripe"],
+    ["paper_pen", "紙筆組織圖", "只用紙筆，紙筆欸！", "#fffdf0", "#2a4a8a", "check"],
+    ["penghu_zongzi", "澎湖粽子", "端午節團購限定", "#5a8a3a", "#f2e0b0", "stripe"],
+    ["green_squishy", "綠綠的舒壓小物", "咬一口就斷掉了", "#6ae05a", "#d8ffd0", "dots"],
+    ["yuanyang_pot", "鴛鴦鍋", "今天的不算", "#e8322a", "#fff2d8", "swirl"]
+  ];
+  const WEIRD = {};
+  WEIRD_LIST.forEach(([k, name, say, c, c2, pat]) => { WEIRD[k] = { name, say, c, c2, pat }; });
+  // Paint a 糖蔥 in a flavor's own colors and pattern (tube ridges + gloss on top).
+  function stickPaint(f) {
+    const a = f.c, b = f.c2;
+    const pats = {
+      stripe: `repeating-linear-gradient(90deg, ${a} 0 12px, ${b} 12px 20px)`,
+      dots: `radial-gradient(circle, ${b} 0 3px, transparent 3.6px) 0 0 / 13px 13px, ${a}`,
+      zigzag: `linear-gradient(135deg, ${b} 25%, transparent 25%) -7px 0 / 14px 14px, linear-gradient(225deg, ${b} 25%, transparent 25%) -7px 0 / 14px 14px, linear-gradient(315deg, ${b} 25%, transparent 25%) 0 0 / 14px 14px, linear-gradient(45deg, ${b} 25%, transparent 25%) 0 0 / 14px 14px, ${a}`,
+      speckle: `radial-gradient(circle at 20% 30%, ${b} 0 1.6px, transparent 2.2px) 0 0 / 9px 11px, radial-gradient(circle at 70% 70%, ${b} 0 1.3px, transparent 1.9px) 0 0 / 13px 8px, ${a}`,
+      swirl: `repeating-conic-gradient(from 10deg at 30% 50%, ${a} 0 30deg, ${b} 30deg 60deg)`,
+      check: `repeating-conic-gradient(${a} 0 25%, ${b} 0 50%) 0 0 / 14px 14px`
+    };
+    return "linear-gradient(180deg, rgba(255,255,255,.55) 0 16%, rgba(255,255,255,0) 30%, rgba(0,0,0,0) 72%, rgba(0,0,0,.14) 100%), " +
+      "repeating-linear-gradient(180deg, rgba(0,0,0,.08) 0 2px, transparent 2px 8px), " + (pats[f.pat] || pats.stripe);
+  }
+  // A 糖蔥-shaped block that shows which weird flavor was drawn.
+  function flavorStick(f, tag) {
+    const wrap = document.createElement("div"); wrap.className = "fstick-wrap";
+    const st = document.createElement("div"); st.className = "fstick"; st.style.background = stickPaint(f);
+    const lb = document.createElement("span"); lb.textContent = (tag ? tag + "：" : "") + f.name;
+    st.appendChild(lb);
+    const say = document.createElement("p"); say.className = "fsay"; say.textContent = f.say;
+    wrap.append(st, say);
+    return wrap;
+  }
   const WEIRD_KEYS = Object.keys(WEIRD);
   const rollWeird = () => WEIRD_KEYS[Math.floor(Math.random() * WEIRD_KEYS.length)];
   const flavorLabel = (it) => it.flavor === "weird" && WEIRD[it.weird] ? "怪味（" + WEIRD[it.weird].name + "）" : (FLAVORS[it.flavor] || FLAVORS.plain).name;
@@ -906,14 +1003,17 @@ body:not(.gene-mode) .gene-only { display: none !important; }
     items.forEach((it) => {
       const card = document.createElement("article"); card.className = "note-card";
       const bar = document.createElement("div"); bar.className = "stickbar" + (it.flavor === "weird" ? " weird" : "");
+      if (it.flavor === "weird" && WEIRD[it.weird]) bar.style.background = stickPaint(WEIRD[it.weird]);
       bar.style.setProperty("--flav", (FLAVORS[it.flavor] || FLAVORS.plain).c);
       const h = document.createElement("h4"); h.textContent = (it.name || "神秘海洋生物");
       const fl = document.createElement("span"); fl.className = "fl";
       const wf = it.flavor === "weird" ? WEIRD[it.weird] : null;
-      fl.textContent = wf ? "怪味糖蔥・抽中" + wf.name + "（" + wf.say + "）" : (FLAVORS[it.flavor] || FLAVORS.plain).name + "糖蔥";
+      fl.textContent = wf ? "怪味糖蔥" : (FLAVORS[it.flavor] || FLAVORS.plain).name + "糖蔥";
       const p = document.createElement("p"); p.textContent = it.text;
       const t = document.createElement("time"); t.textContent = fmt(it.updatedAt || it.createdAt);
-      card.append(bar, h, fl, p, t); box.appendChild(card);
+      card.append(bar, h, fl);
+      if (wf) card.appendChild(flavorStick(wf, "抽中"));
+      card.append(p, t); box.appendChild(card);
     });
   }
 
@@ -952,6 +1052,7 @@ body:not(.gene-mode) .gene-only { display: none !important; }
         const sw = document.createElement("span"); sw.className = "swirl"; sw.style.animationDelay = (-(hv % 5)) + "s";
         const bd = document.createElement("span"); bd.className = "badge";
         const wf = WEIRD[it.weird];
+        if (wf) { sw.style.background = stickPaint(wf); sw.style.animation = "none"; }
         bd.textContent = wf ? wf.name + "！" : "???";
         if (wf) bd.style.setProperty("--bf", wf.c);
         b.append(sw, inner, bd);
@@ -985,7 +1086,9 @@ body:not(.gene-mode) .gene-only { display: none !important; }
     $("sheet-who").textContent = (it.name || "神秘海洋生物") + " 送來的" + (it.flavor === "weird" ? "怪味" : (FLAVORS[it.flavor] || FLAVORS.plain).name) + "糖蔥";
     const rv = $("sheet-reveal");
     rv.hidden = !wf;
-    if (wf) { rv.textContent = "抽中：" + wf.name + "口味。" + wf.say; rv.style.setProperty("--bf", wf.c); }
+    rv.textContent = "";
+    if (wf) { const lead = document.createElement("p"); lead.className = "lead"; lead.textContent = "怪味抽中了："; rv.append(lead, flavorStick(wf)); }
+    $("sheet-stick").style.background = wf ? stickPaint(wf) : "";
     $("sheet-body").textContent = it.text;
     $("sheet-when").textContent = fmt(it.updatedAt || it.createdAt);
     $("sheet-edit").hidden = it.id !== uid;
@@ -1036,7 +1139,9 @@ body:not(.gene-mode) .gene-only { display: none !important; }
     try {
       const res = await api.save(doc);
       const wf = res && res.weird ? WEIRD[res.weird] : null;
-      msg((wasMine ? "糖蔥更新好了！" : "糖蔥送到了，Gene 大星會收到的！") + (wf ? "　怪味揭曉：" + wf.name + "！" + wf.say + "。" : ""));
+      msg(wasMine ? "糖蔥更新好了！" : "糖蔥送到了，Gene 大星會收到的！");
+      const rb = $("reveal-box"); rb.textContent = ""; rb.hidden = !wf;
+      if (wf) { const lead = document.createElement("p"); lead.className = "lead"; lead.textContent = "怪味揭曉！你送給 Gene 大星的是："; rb.append(lead, flavorStick(wf)); }
       setTimeout(() => stage.scrollIntoView({ behavior: "smooth", block: "center" }), 350);
       store.set("gene-draft", "");
     } catch (err) {
