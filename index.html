@@ -545,6 +545,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         <p>糖蔥是台灣的古早味糖，又脆又甜。包一句話在裡面，Gene 大星會一根一根收好帶走。</p>
       </div>
 
+      <div class="cta" id="archived-note" hidden>
+        <p>糖蔥收集結束囉！下面是大家送給 Gene 大星的每一根糖蔥，點一下就能打開來讀。</p>
+      </div>
+
       <div class="cta" id="elsewhere" hidden>
         <p>這裡是讀信版。大家的糖蔥都存放在海底郵局本站，請到那裡送糖蔥、看糖蔥。</p>
         <a class="btn" href="https://claude.ai/artifact/2sp1dQgD6e7jqhgHKABUQV" target="_blank" rel="noopener">去海底郵局本站送糖蔥 →</a>
@@ -801,6 +805,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   let items = [];
   // Set to the Google Apps Script web-app URL to store 糖蔥 in a Google Sheet (used when the page runs outside claude.ai).
   const SHEET_API = "https://script.google.com/a/macros/gamania.com/s/AKfycbxUo43IexuvJejpw56Op9UaY1g76uUHHij5B8i0QS-QV5pSkiT8N5DwdEiXP5ZA9YR_Mg/exec";
+  // Frozen copy of every 糖蔥, baked in from the Google Sheet so Gene can read them forever without any backend.
+  const SNAPSHOT = [];
+  // true = archive edition: show SNAPSHOT only, no sending.
+  const ARCHIVED = false;
   let uid = null, isOwner = false, db = null, api = null, loaded = false, offsite = false;
 
   function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
@@ -1056,12 +1064,14 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         applyItems((j.items || []).map(cleanRow));
       } catch (e) {
         if (!loaded) { const st = $("reef-status"); st.hidden = false; st.textContent = "糖蔥還在路上，海底郵局暫時連不上⋯"; }
+        else if (SNAPSHOT.length && !items.length) applyItems(SNAPSHOT.map(cleanRow));
       } finally { fetching = false; }
     }
     api = {
       async save(doc) { const j = await post(Object.assign({ action: "upsert", id: uid, secret }, doc)); await refresh(); return { weird: j.weird || null }; },
       async remove(id) { await post({ action: "delete", id, secret }); await refresh(); }
     };
+    if (SNAPSHOT.length) { loaded = true; applyItems(SNAPSHOT.map(cleanRow)); }
     refresh();
     setInterval(() => { if (document.visibilityState === "visible" && view === "gift") refresh(); }, 20000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
@@ -1069,6 +1079,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 
   (async () => {
     if (!(window.claude && window.claude.use)) {
+      if (ARCHIVED || (!SHEET_API && SNAPSHOT.length)) {
+        loaded = true; $("compose").hidden = true; $("archived-note").hidden = false;
+        applyItems(SNAPSHOT.map(cleanRow)); return;
+      }
       if (SHEET_API) { startSheet(); return; }
       loaded = true;
       offsite = true; $("compose").hidden = true; $("elsewhere").hidden = false; render(); return;
