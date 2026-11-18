@@ -299,7 +299,7 @@ section { padding-block: 28px; }
   background: var(--paper); border: var(--line); box-shadow: var(--pop);
   padding: 24px clamp(18px, 4vw, 30px); display: grid; gap: 12px;
 }
-.sheet .stick.weird { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='34'%3E%3Ctext x='3' y='24' font-family='Arial Black,Arial' font-weight='900' font-size='24' fill='%23141414' fill-opacity='.38' transform='rotate(-14 12 16)'%3E%3F%3C/text%3E%3Ctext x='22' y='31' font-family='Arial Black,Arial' font-weight='900' font-size='15' fill='%23ffffff' fill-opacity='.85' transform='rotate(18 28 24)'%3E%3F%3C/text%3E%3C/svg%3E") 0 0 / 38px 34px, conic-gradient(from 20deg at 30% 60%, #ff4f9a, #ffd629, #2ee6c2, #8a5cff, #ff8a1e, #7bd23f, #ff3b3b, #ff4f9a); animation: trippy 5s linear infinite; }
+.note-card .stickbar.weird, .sheet .stick.weird { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='34'%3E%3Ctext x='3' y='24' font-family='Arial Black,Arial' font-weight='900' font-size='24' fill='%23141414' fill-opacity='.38' transform='rotate(-14 12 16)'%3E%3F%3C/text%3E%3Ctext x='22' y='31' font-family='Arial Black,Arial' font-weight='900' font-size='15' fill='%23ffffff' fill-opacity='.85' transform='rotate(18 28 24)'%3E%3F%3C/text%3E%3C/svg%3E") 0 0 / 38px 34px, conic-gradient(from 20deg at 30% 60%, #ff4f9a, #ffd629, #2ee6c2, #8a5cff, #ff8a1e, #7bd23f, #ff3b3b, #ff4f9a); animation: trippy 5s linear infinite; }
 .sheet .reveal { justify-self: start; font-family: var(--display); font-size: 16px; color: var(--ink); background: var(--bf, #fff); border: 2.5px solid var(--ink); padding: 2px 12px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(-1.5deg); }
 .sheet .stick {
   height: 22px; border: 3px solid var(--ink); border-radius: 8px;
@@ -415,6 +415,20 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 .gift-page .compose { box-shadow: 5px 5px 0 var(--ink); max-width: none; }
 .gift-page .sub { margin: 4px 0 0; font-family: var(--display); font-size: 21px; color: var(--ink); }
 
+body.gene-mode .sender-only { display: none !important; }
+body:not(.gene-mode) .gene-only { display: none !important; }
+.all-wrap { display: grid; gap: 16px; justify-items: start; }
+.all-list { display: grid; gap: 16px; width: 100%; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.note-card { display: grid; gap: 8px; align-content: start; background: var(--paper); border: var(--line); box-shadow: 4px 4px 0 var(--ink); padding: 0 16px 14px; min-width: 0; }
+.note-card .stickbar {
+  height: 18px; margin: 0 -16px 4px; border-bottom: 3px solid var(--ink);
+  background: repeating-linear-gradient(180deg, rgba(0,0,0,.1) 0 2px, transparent 2px 6px), var(--flav, #fffdf5);
+}
+.note-card h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 19px; color: var(--ink); overflow-wrap: anywhere; }
+.note-card .fl { font-size: 13px; color: var(--text-soft); }
+.note-card p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-card time { font-size: 12px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.all-empty { color: var(--text-soft); }
 .hop { animation: hop .7s cubic-bezier(.3,1.6,.5,1) !important; }
 @keyframes hop { 0% { transform: translateY(0) scale(1,1); } 20% { transform: translateY(4px) scale(1.08,.9); } 50% { transform: translateY(-34px) scale(.95,1.06) rotate(-4deg); } 80% { transform: translateY(0) scale(1.05,.95); } 100% { transform: translateY(0); } }
 .gene:hover .star, .cover .art:hover .star { animation-duration: 1s; }
@@ -482,7 +496,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 <div class="wrap shell">
   <div class="topbar">
     <span class="eyebrow">Gama 夥伴的海底郵局</span>
-    <nav class="dots" aria-label="卡片頁面">
+    <nav class="dots sender-only" aria-label="卡片頁面">
       <button class="dot" type="button" data-go="start">1 選名字</button>
       <button class="dot" type="button" data-go="letter">2 讀信</button>
       <button class="dot" type="button" data-go="gift">3 送糖蔥</button>
@@ -498,7 +512,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
           <p class="lede">Gene 大星要游向下一片海了。出發前，他在瓶子裡塞了一封信給還在奮戰的夥伴們。</p>
           <p class="who-q">你是哪一位夥伴？</p>
           <div class="chips" id="chips" role="group" aria-label="選擇你的名字"></div>
-          <button class="skip" type="button" data-go="gift">我是 Gene，直接看大家送的糖蔥</button>
+          <button class="skip" type="button" data-go="for-gene">我是 Gene，看大家送我的糖蔥</button>
         </div>
         <div class="art" aria-hidden="true">
           <svg class="burst" viewBox="-100 -100 200 200"><use href="#burstArt" x="-100" y="-100" width="200" height="200"/></svg>
@@ -531,7 +545,12 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 
     <!-- page 3: candy for Gene -->
     <div class="page gift-page" id="view-gift" data-view="gift" hidden>
-      <div class="intro">
+      <div class="intro gene-only">
+        <h2>給 <span class="latin">Gene</span> 大星的糖蔥</h2>
+        <p>Gene，這些是 Gama 夥伴們一根一根包給你的糖蔥。點你身邊任何一根打開來讀，或按下面的按鈕一次讀完。一路順風，我們後會有期！</p>
+      </div>
+
+      <div class="intro sender-only">
         <h2>送糖蔥給 <span class="latin">Gene</span> 大星</h2>
         <p>糖蔥是台灣的古早味糖，又脆又甜。包一句話在裡面，Gene 大星會一根一根收好帶走。</p>
       </div>
@@ -545,7 +564,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         <a class="btn" href="https://claude.ai/artifact/2sp1dQgD6e7jqhgHKABUQV" target="_blank" rel="noopener">去海底郵局本站送糖蔥 →</a>
       </div>
 
-      <form class="compose" id="compose" novalidate>
+      <form class="compose sender-only" id="compose" novalidate>
         <h3 id="compose-title">包一根糖蔥給 Gene 大星</h3>
         <div class="row">
           <label for="from">署名</label>
@@ -579,9 +598,15 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         <div class="reef-status" id="reef-status">正在潛下去找糖蔥⋯</div>
       </div>
 
+      <section class="all-wrap gene-only" aria-label="全部的糖蔥">
+        <button class="btn" type="button" id="open-all" aria-expanded="false" aria-controls="all-list">一次讀完全部糖蔥</button>
+        <div class="all-list" id="all-list" hidden></div>
+      </section>
+
       <div class="pager">
-        <button class="btn ghost" type="button" data-go="letter" id="back-letter">← 回去讀信</button>
-        <span class="pageno">3 / 3</span>
+        <button class="btn ghost sender-only" type="button" data-go="letter" id="back-letter">← 回去讀信</button>
+        <button class="btn ghost gene-only" type="button" data-go="start">← 回到卡片封面</button>
+        <span class="pageno sender-only">3 / 3</span>
       </div>
     </div>
   </main>
@@ -710,7 +735,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   }
 
   /* ---------- pages ---------- */
-  const VIEWS = ["start", "letter", "gift"];
+  const VIEWS = ["start", "letter", "gift", "for-gene"];
+  function elOf(v) { return v === "for-gene" ? "gift" : v; }
   let view = null;
   function go(v, fromHash) {
     if (!VIEWS.includes(v)) v = "start";
@@ -718,7 +744,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     if (v === view) return;
     view = v;
     if (v === "letter") renderLetter();
-    VIEWS.forEach((x) => { $("view-" + x).hidden = x !== v; });
+    ["start", "letter", "gift"].forEach((x) => { $("view-" + x).hidden = x !== elOf(v); });
+    document.body.classList.toggle("gene-mode", v === "for-gene");
     document.querySelectorAll(".dot").forEach((d) => {
       d.setAttribute("aria-current", d.dataset.go === v ? "step" : "false");
       if (d.dataset.go === "letter") d.disabled = !picked;
@@ -727,7 +754,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     if (!fromHash && location.hash.slice(1) !== v) {
       try { history.pushState(null, "", "#" + v); } catch (e) { location.hash = v; }
     }
-    if (v === "gift") requestAnimationFrame(render);
+    if (elOf(v) === "gift") requestAnimationFrame(render);
     $("card").scrollIntoView({ block: "start", behavior: fromHash ? "auto" : "smooth" });
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
@@ -875,9 +902,38 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     return { pos: boxes.map((b) => ({ x: ox + b.x + w / 2, y: oy + b.y + h / 2 })), w, h, H, gx: ox, gy: oy };
   }
 
+  function renderList() {
+    const box = $("all-list");
+    if (!box) return;
+    box.textContent = "";
+    if (!items.length) { const p = document.createElement("p"); p.className = "all-empty"; p.textContent = "還沒有糖蔥，晚點再來看看！"; box.appendChild(p); return; }
+    items.forEach((it) => {
+      const card = document.createElement("article"); card.className = "note-card";
+      const bar = document.createElement("div"); bar.className = "stickbar" + (it.flavor === "weird" ? " weird" : "");
+      bar.style.setProperty("--flav", (FLAVORS[it.flavor] || FLAVORS.plain).c);
+      const h = document.createElement("h4"); h.textContent = (it.name || "神秘海洋生物");
+      const fl = document.createElement("span"); fl.className = "fl";
+      const wf = it.flavor === "weird" ? WEIRD[it.weird] : null;
+      fl.textContent = wf ? "怪味糖蔥・抽中" + wf.name + "（" + wf.say + "）" : (FLAVORS[it.flavor] || FLAVORS.plain).name + "糖蔥";
+      const p = document.createElement("p"); p.textContent = it.text;
+      const t = document.createElement("time"); t.textContent = fmt(it.updatedAt || it.createdAt);
+      card.append(bar, h, fl, p, t); box.appendChild(card);
+    });
+  }
+  $("open-all").addEventListener("click", () => {
+    const box = $("all-list"), open = box.hidden;
+    box.hidden = !open;
+    $("open-all").setAttribute("aria-expanded", String(open));
+    $("open-all").textContent = open ? "收起來" : "一次讀完全部糖蔥";
+    if (open) setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  });
+
   function render() {
-    $("reef-count").textContent = items.length ? `Gene 大星已經收到 ${items.length} 根糖蔥` : "大家的糖蔥都會堆在 Gene 大星身邊";
-    if (view !== "gift" || !stage.clientWidth) return;
+    $("reef-count").textContent = view === "for-gene"
+      ? (items.length ? `Gene，你收到了 ${items.length} 根糖蔥` : "糖蔥還在路上，晚點再來看看！")
+      : (items.length ? `Gene 大星已經收到 ${items.length} 根糖蔥` : "大家的糖蔥都會堆在 Gene 大星身邊");
+    renderList();
+    if (elOf(view) !== "gift" || !stage.clientWidth) return;
     stage.querySelectorAll(".candy").forEach((el) => el.remove());
     const L = layout();
     stage.style.height = L.H + "px";
@@ -919,11 +975,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     if (offsite) { st.hidden = false; st.textContent = "大家的糖蔥在海底郵局本站，點上面的按鈕過去看。"; }
     else if (loaded && !items.length) { st.hidden = false; st.textContent = "還沒有糖蔥，來送第一根吧！"; }
     else if (items.length) st.hidden = true;
-    $("reef-count").textContent = items.length ? `Gene 大星已經收到 ${items.length} 根糖蔥` : "大家的糖蔥都會堆在 Gene 大星身邊";
   }
 
   let rz;
-  window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (view === "gift") render(); }, 120); });
+  window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (elOf(view) === "gift") render(); }, 120); });
 
   /* ---------- modal ---------- */
   let sheetItem = null, delArmed = false;
@@ -1132,7 +1187,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     };
     if (SNAPSHOT.length) { loaded = true; applyItems(SNAPSHOT.map(cleanRow)); }
     refresh();
-    setInterval(() => { if (document.visibilityState === "visible" && view === "gift") refresh(); }, 20000);
+    setInterval(() => { if (document.visibilityState === "visible" && elOf(view) === "gift") refresh(); }, 20000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
   }
 
