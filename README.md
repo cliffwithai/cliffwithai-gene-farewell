@@ -2,7 +2,7 @@
 
 Gene 的送別卡：選名字 → 讀 Gene 寫給你的信 → 包一根糖蔥送給 Gene 大星。不需要任何帳號。
 
-- 網站：本 repo 的 GitHub Pages（從 `main` 分支根目錄發布）
+- 網站：https://cliffwithai.github.io/cliffwithai-gene-farewell/（GitHub Pages，從 `main` 分支根目錄發布）
 - 糖蔥存放：Google 試算表「Gene 大星的糖蔥（海底郵局留言）」，透過 `apps-script/Code.gs` 讀寫
 - 設定：Apps Script 網頁應用程式網址寫在 `index.html` 的 `SHEET_API`
 
