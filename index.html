@@ -996,7 +996,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     } catch (err) {
       if (err && err.code === "invalid_argument") disableForm("你目前的權限只能看，不能留言。請分享者把你設為可參與（Contributor）。");
       else if (err && err.code === "quota_exceeded") msg("海底郵局滿了，請聯絡頁面擁有者整理一下。", true);
-      else msg("糖蔥斷掉了，請再試一次。", true);
+      else if (err && (err.code === "network" || err.code === "not_json")) msg("糖蔥送不出去：連不到存放糖蔥的 Google 試算表（" + err.code + "）。通常是 Apps Script 只開放給公司帳號，請確認部署時「誰可以存取」選的是「所有人」。", true);
+      else msg("糖蔥斷掉了，請再試一次。（代碼：" + ((err && err.code) || "unknown") + "）", true);
     } finally {
       busy = false; if (!$("from").disabled) $("send").disabled = false;
     }
@@ -1060,8 +1061,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     let secret = store.get("gene-candy-secret");
     if (!uid || !secret) { uid = "c" + rand(10); secret = rand(20); store.set("gene-candy-id", uid); store.set("gene-candy-secret", secret); }
     const post = async (body) => {
-      const r = await fetch(SHEET_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
-      const j = await r.json();
+      let r, j;
+      try { r = await fetch(SHEET_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) }); }
+      catch (e) { throw { code: "network" }; }
+      try { j = await r.json(); } catch (e) { throw { code: "not_json" }; }
       if (!j.ok) throw { code: j.error || "server" };
       return j;
     };
@@ -1070,12 +1073,14 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       if (fetching) return;
       fetching = true;
       try {
-        const r = await fetch(SHEET_API + (SHEET_API.includes("?") ? "&" : "?") + "t=" + Date.now());
-        const j = await r.json();
+        let r, j;
+        try { r = await fetch(SHEET_API + (SHEET_API.includes("?") ? "&" : "?") + "t=" + Date.now()); }
+        catch (e) { throw { code: "network" }; }
+        try { j = await r.json(); } catch (e) { throw { code: "not_json" }; }
         loaded = true;
         applyItems((j.items || []).map(cleanRow));
       } catch (e) {
-        if (!loaded) { const st = $("reef-status"); st.hidden = false; st.textContent = "糖蔥還在路上，海底郵局暫時連不上⋯"; }
+        if (!loaded) { const st = $("reef-status"); st.hidden = false; st.textContent = "糖蔥還在路上，海底郵局暫時連不上⋯（" + ((e && e.code) || "network") + "）"; }
         else if (SNAPSHOT.length && !items.length) applyItems(SNAPSHOT.map(cleanRow));
       } finally { fetching = false; }
     }
