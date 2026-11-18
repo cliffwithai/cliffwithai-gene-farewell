@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 每個人（匿名登入）只能寫自己的那一根糖蔥：candies/{自己的 uid}
+    match /candies/{uid} {
+      allow read: if true;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && validCandy();
+
+      function validCandy() {
+        let d = request.resource.data;
+        let before = resource == null ? {} : resource.data;
+        return d.keys().hasOnly(['name', 'text', 'flavor', 'weird', 'createdAt', 'updatedAt', 'hidden'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 24
+          && d.text is string && d.text.size() > 0 && d.text.size() <= 400
+          && d.flavor in ['plain', 'peanut', 'berry', 'matcha', 'brown', 'weird']
+          && (d.flavor != 'weird'
+              || d.get('weird', '') in ['cilantro', 'wasabi', 'chaotian', 'jalapeno', 'habanero', 'ghost', 'reaper', 'mala'])
+          // 怪味抽到之後不能重抽
+          && (before.get('weird', null) == null || d.get('weird', null) == before.get('weird', null))
+          // hidden 只有你在 Firebase 後台能改
+          && d.get('hidden', false) == before.get('hidden', false)
+          && d.createdAt is int && d.updatedAt is int;
+      }
+    }
+  }
+}

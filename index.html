@@ -816,7 +816,9 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   const geneEl = $("gene");
   let items = [];
   // Set to the Google Apps Script web-app URL to store 糖蔥 in a Google Sheet (used when the page runs outside claude.ai).
-  const SHEET_API = "https://script.google.com/a/macros/gamania.com/s/AKfycbxUo43IexuvJejpw56Op9UaY1g76uUHHij5B8i0QS-QV5pSkiT8N5DwdEiXP5ZA9YR_Mg/exec";
+  const SHEET_API = "";
+  // Firebase web-app config (Project settings → Your apps → Web). Public by design; access is enforced by Firestore rules.
+  const FIREBASE_CONFIG = null;
   // Frozen copy of every 糖蔥, baked in from the Google Sheet so Gene can read them forever without any backend.
   const SNAPSHOT = [];
   // true = archive edition: show SNAPSHOT only, no sending.
@@ -985,7 +987,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     busy = true; $("send").disabled = true; msg("糖蔥打包中⋯");
     const now = Date.now();
     const doc = { name: name.slice(0, 24), text: body.slice(0, 400), flavor, createdAt: (mine && mine.createdAt) || now, updatedAt: now };
-    if (flavor === "weird" && mine && mine.flavor === "weird" && WEIRD[mine.weird]) doc.weird = mine.weird;
+    if (mine && WEIRD[mine.weird]) doc.weird = mine.weird;
     const wasMine = !!mine;
     try {
       const res = await api.save(doc);
@@ -997,6 +999,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       if (err && err.code === "invalid_argument") disableForm("你目前的權限只能看，不能留言。請分享者把你設為可參與（Contributor）。");
       else if (err && err.code === "quota_exceeded") msg("海底郵局滿了，請聯絡頁面擁有者整理一下。", true);
       else if (err && (err.code === "network" || err.code === "not_json")) msg("糖蔥送不出去：連不到存放糖蔥的 Google 試算表（" + err.code + "）。通常是 Apps Script 只開放給公司帳號，請確認部署時「誰可以存取」選的是「所有人」。", true);
+      else if (err && err.code === "permission-denied") msg("糖蔥送不出去：內容可能太長或有不支援的格式，請檢查後再試一次。", true);
       else msg("糖蔥斷掉了，請再試一次。（代碼：" + ((err && err.code) || "unknown") + "）", true);
     } finally {
       busy = false; if (!$("from").disabled) $("send").disabled = false;
@@ -1050,8 +1053,47 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       flavor: typeof x.flavor === "string" && FLAVORS[x.flavor] ? x.flavor : "plain",
       weird: typeof x.weird === "string" && WEIRD[x.weird] ? x.weird : null,
       createdAt: Number(x.createdAt) || 0,
-      updatedAt: Number(x.updatedAt) || 0
+      updatedAt: Number(x.updatedAt) || 0,
+      hidden: x.hidden === true
     };
+  }
+
+  /* Firebase backend (GitHub Pages version): anonymous sign-in, so nobody needs an account */
+  function loadScript(src) {
+    return new Promise((ok, fail) => { const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = fail; document.head.appendChild(el); });
+  }
+  async function startFirebase() {
+    const st = $("reef-status");
+    if (!window.firebase) {
+      const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+      try { for (const f of ["firebase-app-compat.js", "firebase-auth-compat.js", "firebase-firestore-compat.js"]) await loadScript(base + f); }
+      catch (e) { loaded = true; st.hidden = false; st.textContent = "海底郵局暫時連不上，請重新整理頁面。"; disableForm("海底郵局暫時連不上，請重新整理頁面。"); return; }
+    }
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const col = firebase.firestore().collection("candies");
+    const timer = setTimeout(() => { if (!loaded) { st.hidden = false; st.textContent = "糖蔥還在路上，海底郵局暫時連不上⋯"; } }, 10000);
+    col.onSnapshot((snap) => {
+      clearTimeout(timer); loaded = true;
+      applyItems(snap.docs.map((d) => cleanRow(Object.assign({}, d.data(), { id: d.id }))).filter((x) => !x.hidden));
+    }, (err) => {
+      clearTimeout(timer); loaded = true; st.hidden = false;
+      st.textContent = "暫時看不到糖蔥（" + ((err && err.code) || "error") + "），請重新整理頁面。";
+    });
+    api = {
+      async save(doc) {
+        if (doc.flavor === "weird" && !doc.weird) doc.weird = rollWeird();
+        await col.doc(uid).set(doc, { merge: true });
+        return { weird: doc.flavor === "weird" ? doc.weird : null };
+      },
+      async remove(id) { await col.doc(id).delete(); }
+    };
+    try {
+      const cred = await firebase.auth().signInAnonymously();
+      uid = cred.user.uid;
+      applyItems(items);
+    } catch (e) {
+      disableForm("目前沒辦法送糖蔥（" + ((e && e.code) || "auth") + "），請稍後再試。");
+    }
   }
 
   /* Google Sheet backend (GitHub Pages version): anyone can send, no account needed */
@@ -1100,6 +1142,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
         loaded = true; $("compose").hidden = true; $("archived-note").hidden = false;
         applyItems(SNAPSHOT.map(cleanRow)); return;
       }
+      if (FIREBASE_CONFIG) { startFirebase(); return; }
       if (SHEET_API) { startSheet(); return; }
       loaded = true;
       offsite = true; $("compose").hidden = true; $("elsewhere").hidden = false; render(); return;
@@ -1117,7 +1160,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       async save(doc) {
         if (doc.flavor === "weird" && !doc.weird) doc.weird = rollWeird();
         await db.doc("wishes/" + uid).set(doc);
-        return { weird: doc.weird || null };
+        return { weird: doc.flavor === "weird" ? doc.weird : null };
       },
       async remove(id) { await db.doc("wishes/" + id).delete(); }
     };

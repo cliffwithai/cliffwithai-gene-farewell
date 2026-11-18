@@ -3,7 +3,9 @@
 Gene 的送別卡：選名字 → 讀 Gene 寫給你的信 → 包一根糖蔥送給 Gene 大星。不需要任何帳號。
 
 - 網站：https://cliffwithai.github.io/cliffwithai-gene-farewell/（GitHub Pages，從 `main` 分支根目錄發布）
-- 糖蔥存放：Google 試算表「Gene 大星的糖蔥（海底郵局留言）」，透過 `apps-script/Code.gs` 讀寫
-- 設定：Apps Script 網頁應用程式網址寫在 `index.html` 的 `SHEET_API`
+- 糖蔥存放：Firebase Firestore 的 `candies` 集合，每位訪客用匿名登入，只能寫自己那一根
+- 設定：`index.html` 裡的 `FIREBASE_CONFIG`；安全規則在 `firebase/firestore.rules`
 
-管理留言：在試算表 H 欄填 TRUE 可隱藏一根糖蔥，刪掉整列則永久移除。
+管理留言：在 Firebase 後台的 Firestore 裡，對某根糖蔥加上欄位 `hidden`（布林值 true）就會隱藏；刪掉文件則永久移除。
+
+`apps-script/Code.gs` 是先前 Google 試算表方案的備份，目前未使用。
