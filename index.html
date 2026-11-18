@@ -415,6 +415,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
 .gift-page .compose { box-shadow: 5px 5px 0 var(--ink); max-width: none; }
 .gift-page .sub { margin: 4px 0 0; font-family: var(--display); font-size: 21px; color: var(--ink); }
 
+.hop { animation: hop .7s cubic-bezier(.3,1.6,.5,1) !important; }
+@keyframes hop { 0% { transform: translateY(0) scale(1,1); } 20% { transform: translateY(4px) scale(1.08,.9); } 50% { transform: translateY(-34px) scale(.95,1.06) rotate(-4deg); } 80% { transform: translateY(0) scale(1.05,.95); } 100% { transform: translateY(0); } }
+.gene:hover .star, .cover .art:hover .star { animation-duration: 1s; }
+.cover .art { cursor: pointer; }
 @media (max-width: 680px) {
   .cover { grid-template-columns: 1fr; }
   .cover .art { order: -1; width: 200px; justify-self: center; }
@@ -431,10 +435,10 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       <circle cx="4" cy="4" r="1.7" fill="#ff6b3d" opacity=".55"/>
     </pattern>
     <clipPath id="starClip">
-      <polygon points="100,22 129.4,74.6 186,88 147.6,130.5 153,188 100,165 47,188 52.4,130.5 14,88 70.6,74.6"/>
+      <polygon points="100,20 130.5,74 188,86 148.5,130.5 154,190 100,166 46,190 51.5,130.5 12,86 69.5,74"/>
     </clipPath>
     <pattern id="halftone" width="7" height="7" patternUnits="userSpaceOnUse">
-      <circle cx="3.5" cy="3.5" r="2.1" fill="#d94f7b"/>
+      <circle cx="3.5" cy="3.5" r="2.1" fill="#d9606a"/>
     </pattern>
     <pattern id="stripes" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)">
       <rect width="12" height="12" fill="#ffd629"/><rect width="6" height="12" fill="#ff6b3d"/>
@@ -445,43 +449,30 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
     <polygon id="burstPoly2" fill="url(#burstDots)"/>
   </symbol>
   <symbol id="geneArt" viewBox="-6 0 212 210" overflow="visible">
-    <ellipse cx="100" cy="200" rx="64" ry="7" fill="#141414" opacity=".22"/>
+    <ellipse cx="100" cy="201" rx="64" ry="7" fill="#141414" opacity=".22"/>
     <g stroke="#141414" stroke-width="4" stroke-linecap="round" fill="none">
-      <path d="M2 58 q-6 10 -4 22"/><path d="M14 46 q-10 6 -12 14"/><path d="M196 60 q6 8 4 20"/>
+      <path d="M0 58 q-6 10 -4 22"/><path d="M12 46 q-10 6 -12 14"/><path d="M198 60 q6 8 4 20"/>
     </g>
-    <polygon points="100,22 129.4,74.6 186,88 147.6,130.5 153,188 100,165 47,188 52.4,130.5 14,88 70.6,74.6"
-      fill="#141414" stroke="#141414" stroke-width="29" stroke-linejoin="round"/>
-    <polygon points="100,22 129.4,74.6 186,88 147.6,130.5 153,188 100,165 47,188 52.4,130.5 14,88 70.6,74.6"
-      fill="#ff8fb1" stroke="#ff8fb1" stroke-width="21" stroke-linejoin="round"/>
+    <polygon points="100,20 130.5,74 188,86 148.5,130.5 154,190 100,166 46,190 51.5,130.5 12,86 69.5,74" fill="#141414" stroke="#141414" stroke-width="31" stroke-linejoin="round"/>
+    <polygon points="100,20 130.5,74 188,86 148.5,130.5 154,190 100,166 46,190 51.5,130.5 12,86 69.5,74" fill="#fa8585" stroke="#fa8585" stroke-width="23" stroke-linejoin="round"/>
     <g clip-path="url(#starClip)">
-      <path d="M126 30 L210 70 L210 215 L70 215 Q150 150 126 30Z" fill="url(#halftone)" opacity=".75"/>
+      <path d="M150 60 L215 80 L215 215 L60 215 Q160 160 150 60Z" fill="url(#halftone)" opacity=".6"/>
     </g>
-    <path d="M150 140 Q158 168 152 184" fill="none" stroke="#141414" stroke-width="3" stroke-linecap="round"/>
-    <path d="M58 98 q-14 -6 -22 -2" fill="none" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M152 146 Q160 172 154 186" fill="none" stroke="#141414" stroke-width="3" stroke-linecap="round"/>
+    <path d="M44 172 Q40 182 44 188" fill="none" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Gene's face (frames swapped by script for blinking) -->
+    <image class="gene-face" href="gene-face/idle-01.webp" x="57" y="16" width="86" height="106" preserveAspectRatio="xMidYMid meet"/>
+    <!-- striped travel scarf -->
     <g clip-path="url(#starClip)">
-      <path d="M0 116 Q100 132 200 116 L200 134 Q100 150 0 134z" fill="url(#stripes)" stroke="#141414" stroke-width="3"/>
+      <path d="M0 122 Q100 138 200 122 L200 140 Q100 156 0 140z" fill="url(#stripes)" stroke="#141414" stroke-width="3"/>
     </g>
-    <path d="M110 130 l14 38 l-16 3 l-8 -38z" fill="url(#stripes)" stroke="#141414" stroke-width="3" stroke-linejoin="round"/>
-    <g transform="translate(158 98) rotate(10)">
+    <path d="M112 136 l14 38 l-16 3 l-8 -38z" fill="url(#stripes)" stroke="#141414" stroke-width="3" stroke-linejoin="round"/>
+    <!-- suitcase -->
+    <g transform="translate(160 100) rotate(10)">
       <path d="M9 0 v-9 q0 -5 5 -5 h9 q5 0 5 5 v9" fill="none" stroke="#141414" stroke-width="4"/>
       <rect x="0" y="0" width="38" height="28" rx="5" fill="#c98a4b" stroke="#141414" stroke-width="3"/>
       <rect x="0" y="11" width="38" height="6" fill="#8f5a2c" stroke="#141414" stroke-width="2"/>
       <rect x="25" y="4" width="9" height="6" rx="1.5" fill="#fff" stroke="#141414" stroke-width="1.8"/>
-    </g>
-    <path d="M74 50 q12 -10 22 -2" fill="none" stroke="#141414" stroke-width="5" stroke-linecap="round"/>
-    <path d="M126 50 q-12 -10 -22 -2" fill="none" stroke="#141414" stroke-width="5" stroke-linecap="round"/>
-    <ellipse cx="87" cy="70" rx="12" ry="15" fill="#fff" stroke="#141414" stroke-width="3.5"/>
-    <ellipse cx="113" cy="70" rx="12" ry="15" fill="#fff" stroke="#141414" stroke-width="3.5"/>
-    <circle cx="91" cy="74" r="5.5" fill="#141414"/>
-    <circle cx="109" cy="74" r="5.5" fill="#141414"/>
-    <circle cx="93" cy="71.5" r="1.8" fill="#fff"/>
-    <circle cx="111" cy="71.5" r="1.8" fill="#fff"/>
-    <path d="M74 96 Q100 126 126 96 Q100 104 74 96Z" fill="#7a1f35" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-    <path d="M88 106 Q100 100 112 106 Q106 116 100 116 Q94 116 88 106Z" fill="#ff6f8f"/>
-    <path d="M80 98 Q100 104 120 98 l-1 4 Q100 108 81 102Z" fill="#fff"/>
-    <g stroke="#d94f7b" stroke-width="2.5" stroke-linecap="round">
-      <path d="M64 86 l-4 7"/><path d="M70 86 l-4 7"/><path d="M76 86 l-4 7"/>
-      <path d="M128 86 l-4 7"/><path d="M134 86 l-4 7"/><path d="M140 86 l-4 7"/>
     </g>
   </symbol>
 </svg>
@@ -742,6 +733,27 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
   window.addEventListener("hashchange", () => go(location.hash.slice(1), true));
   window.addEventListener("popstate", () => go(location.hash.slice(1), true));
+
+  /* ---------- Gene's face: blink loop + hop on click ---------- */
+  (() => {
+    const DUR = [1100, 220, 100, 140, 100, 220, 220, 900];
+    const src = (i) => "gene-face/idle-0" + (i + 1) + ".webp";
+    DUR.forEach((_, i) => { const im = new Image(); im.src = src(i); });
+    const faces = () => document.querySelectorAll(".gene-face");
+    let still = false;
+    try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (!still) {
+      let f = 0;
+      const tick = () => { f = (f + 1) % DUR.length; faces().forEach((el) => el.setAttribute("href", src(f))); setTimeout(tick, DUR[f]); };
+      setTimeout(tick, DUR[0]);
+    }
+    const hop = (el) => { if (still || !el) return; el.classList.remove("hop"); void el.getBBox; void el.offsetWidth; el.classList.add("hop"); };
+    document.querySelectorAll(".gene .star, .cover .art .star, .from-gene svg").forEach((el) => {
+      el.addEventListener("animationend", (e) => { if (e.animationName === "hop") el.classList.remove("hop"); });
+    });
+    $("gene").addEventListener("click", () => hop(document.querySelector(".gene .star")));
+    document.querySelector(".cover .art").addEventListener("click", () => hop(document.querySelector(".cover .art .star")));
+  })();
 
   /* ---------- Gene talks ---------- */
   let sayTimer, lineIdx = 0;
