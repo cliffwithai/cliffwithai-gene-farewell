@@ -750,7 +750,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   const stage = $("stage");
   const geneEl = $("gene");
   let items = [];
-  let uid = null, isOwner = false, db = null, loaded = false;
+  let uid = null, isOwner = false, db = null, loaded = false, offsite = false;
 
   function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 
@@ -834,7 +834,8 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
       stage.appendChild(b);
     });
     const st = $("reef-status");
-    if (loaded && !items.length) { st.hidden = false; st.textContent = "還沒有糖蔥，來送第一根吧！"; }
+    if (offsite) { st.hidden = false; st.textContent = "大家的糖蔥在海底郵局本站，點上面的按鈕過去看。"; }
+    else if (loaded && !items.length) { st.hidden = false; st.textContent = "還沒有糖蔥，來送第一根吧！"; }
     else if (items.length) st.hidden = true;
     $("reef-count").textContent = items.length ? `Gene 大星已經收到 ${items.length} 根糖蔥` : "大家的糖蔥都會堆在 Gene 大星身邊";
   }
@@ -943,7 +944,7 @@ details.all .to-mini b { font-family: var(--display-latin); font-weight: 400; fo
   (async () => {
     if (!(window.claude && window.claude.use)) {
       loaded = true; $("reef-status").textContent = "大家的糖蔥在海底郵局本站，點上面的按鈕過去看。";
-      $("compose").hidden = true; $("elsewhere").hidden = false; return;
+      offsite = true; $("compose").hidden = true; $("elsewhere").hidden = false; render(); return;
     }
     const [dbNs, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
     db = dbNs;
